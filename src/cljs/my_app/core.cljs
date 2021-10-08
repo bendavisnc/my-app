@@ -49,10 +49,10 @@
                  :when (not (nil? winner))]
              winner))))
 
-(defn handle-click-fn [game-state]
+(defn handle-click-fn [gs]
   (fn [i]
-    (let [history (:history (deref game-state))
-          step-number (:step-number (deref game-state))
+    (let [history (:history (deref gs))
+          step-number (:step-number (deref gs))
           history* (subvec history
                            0
                            (inc step-number))
@@ -63,7 +63,7 @@
           should-update-state? (not (or is-square-occupied?
                                         winner))]
       (if should-update-state?
-        (swap! game-state
+        (swap! gs
                (fn [gs]
                  (-> gs
                      (assoc :history (conj history*
