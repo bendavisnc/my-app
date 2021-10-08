@@ -1,5 +1,9 @@
 # my-app
 
+This is a ported implementation of a tutorial from react's site to reagent/clojure.
+
+See the [original tutorial](https://reactjs.org/tutorial/tutorial.html).
+
 This is the my-app project.
 
 ## Development mode
