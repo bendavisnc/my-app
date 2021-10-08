@@ -39,18 +39,15 @@
          [1, 4, 7]
          [2, 5, 8]
          [0, 4, 8]
-         [2, 4, 6]]
-        possible-winners
-        (mapcat (fn [line]
-                  (let [placements (map (fn [i]
-                                          (nth squares i))
-                                        line)
-                        set-count (count (set placements))]
-                    (if (= 1 set-count)
-                      [(first placements)]
-                      [])))
-                lines)]
-    (first possible-winners)))
+         [2, 4, 6]]]
+    (first (for [line lines
+                 :let [s
+                       (set (map (partial get squares)
+                                 line))]
+                 :when (= 1 (count s))
+                 winner s
+                 :when (not (nil? winner))]
+             winner))))
 
 (defn handle-click-fn [game-state]
   (fn [i]
@@ -79,24 +76,24 @@
                      (update :is-x-next? not))))
         nil))))
 
-(def game-state
-  (atom {:history [{:squares [nil,nil,nil,nil,nil,nil,nil,nil,nil]}]
-         :step-number 0
-         :is-x-next? true}))
+(def start-game-state
+  {:history [{:squares [nil,nil,nil,nil,nil,nil,nil,nil,nil]}]
+   :step-number 0
+   :is-x-next? true})
 
-(defn jump-to! [move-index]
-  (swap! game-state (fn [gs]
-                      (-> gs
-                          (assoc :step-number move-index)
-                          (assoc :is-x-next?
-                                 (zero? (mod move-index 2)))))))
+(defn jump-to! [gs, move-index]
+  (swap! gs (fn [gs]
+              (-> gs
+                  (assoc :step-number move-index)
+                  (assoc :is-x-next?
+                         (zero? (mod move-index 2)))))))
 
-(defn jump-to-button [move-index, desc]
+(defn jump-to-button [gs, move-index, desc]
   [:button {:on-click (fn []
-                        (jump-to! move-index))}
+                        (jump-to! gs move-index))}
    desc])
 
-(defn game-info [history, status]
+(defn game-info [gs, history, status]
   [:div {:class-name "game-info"}
    [:div status]
    [:ol
@@ -104,28 +101,31 @@
       (let [desc (if (zero? i)
                    "Go to game start"
                    (str "Go to move #" i))]
-        [:li {:key i} [jump-to-button i desc]]))]])
+        [:li {:key i} [jump-to-button gs i desc]]))]])
 
 
 (defn game []
-  (let [step-number (:step-number (deref game-state))
-        current (get (:history  (deref game-state))
-                     step-number)
-        winner (winner-check (:squares current))
-        is-x-next? (:is-x-next? (deref game-state))
-        status (if winner
-                 (str "Winner: " winner)
-                 (str "Next player: " (if is-x-next? "X" "O")))]
-    [:div {:class-name "game"}
-     [:div {:class-name "game-board"}]
-     [board (handle-click-fn game-state)
-      (:squares current)]
-     [game-info (:history (deref game-state))
-      status]]))
+  (let [gs (atom start-game-state)]
+    (fn []
+      (let [game-state (deref gs)
+            step-number (:step-number  game-state)
+            current (get (:history   game-state)
+                         step-number)
+            winner (winner-check (:squares current))
+            is-x-next? (:is-x-next?  game-state)
+            status (if winner
+                     (str "Winner: " winner)
+                     (str "Next player: " (if is-x-next? "X" "O")))]
+        [:div {:class-name "game"}
+         [:div {:class-name "game-board"}]
+         [board (handle-click-fn gs)
+          (:squares current)]
+         [game-info gs (:history game-state)
+          status]]))))
 
 
 (defn mount-root []
-  (rdom/render [game] (.getElementById js/document "app")))
+  (rdom/render [(game)] (.getElementById js/document "app")))
 
 (defn init! []
   (mount-root))
