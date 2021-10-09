@@ -3,32 +3,25 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]))
 
-(defn square [on-click, text, id]
+(defn square [on-click, squares, i]
   [:button {:class-name "square"
-            :id id
-            :on-click on-click}
-   text])
-
-(defn square-with-index [on-click, squares, i]
-  [square (fn []
-            (on-click i))
-   (get squares i)
-   i])
+            :on-click #(on-click i)}
+   (get squares i)])
 
 (defn board [on-click, squares]
   [:div
    [:div {:class-name "board-row"}
-    [square-with-index on-click, squares, 0]
-    [square-with-index on-click, squares, 1]
-    [square-with-index on-click, squares, 2]]
+    [square on-click, squares, 0]
+    [square on-click, squares, 1]
+    [square on-click, squares, 2]]
    [:div {:class-name "board-row"}
-    [square-with-index on-click, squares, 3]
-    [square-with-index on-click, squares, 4]
-    [square-with-index on-click, squares, 5]]
+    [square on-click, squares, 3]
+    [square on-click, squares, 4]
+    [square on-click, squares, 5]]
    [:div {:class-name "board-row"}
-    [square-with-index on-click, squares, 6]
-    [square-with-index on-click, squares, 7]
-    [square-with-index on-click, squares, 8]]])
+    [square on-click, squares, 6]
+    [square on-click, squares, 7]
+    [square on-click, squares, 8]]])
 
 (defn winner-check [squares]
   (let [lines
@@ -77,9 +70,11 @@
         nil))))
 
 (def start-game-state
-  {:history [{:squares [nil,nil,nil,nil,nil,nil,nil,nil,nil]}]
-   :step-number 0
-   :is-x-next? true})
+  (let [tictactoe-squares-count 9]
+    {:history [{:squares (vec (repeat tictactoe-squares-count
+                                      nil))}]
+     :step-number 0
+     :is-x-next? true}))
 
 (defn jump-to! [gs, move-index]
   (swap! gs (fn [gs]
@@ -97,12 +92,11 @@
   [:div {:class-name "game-info"}
    [:div status]
    [:ol
-    (for [i (range (count history))]
-      (let [desc (if (zero? i)
-                   "Go to game start"
-                   (str "Go to move #" i))]
-        [:li {:key i} [jump-to-button gs i desc]]))]])
-
+    (for [i (range (count history))
+          :let [desc (if (zero? i)
+                       "Go to game start"
+                       (str "Go to move #" i))]]
+      [:li {:key i} [jump-to-button gs i desc]])]])
 
 (defn game []
   (let [gs (atom start-game-state)]
@@ -120,9 +114,7 @@
          [:div {:class-name "game-board"}]
          [board (handle-click-fn gs)
           (:squares current)]
-         [game-info gs (:history game-state)
-          status]]))))
-
+         [game-info gs (:history game-state) status]]))))
 
 (defn mount-root []
   (rdom/render [(game)] (.getElementById js/document "app")))
