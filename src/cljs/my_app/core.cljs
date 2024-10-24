@@ -31,23 +31,14 @@
 ;; Takes a tic-tac-toe board in the form of a list of player symbols and compares it with each possible set of winning positions.
 ;; Returns a non nil string character representing the winner, if there is one.
 (defn winner-check [squares]
-  (let [lines
-        [[0, 1, 2]
-         [3, 4, 5]
-         [6, 7, 8]
-         [0, 3, 6]
-         [1, 4, 7]
-         [2, 5, 8]
-         [0, 4, 8]
-         [2, 4, 6]]]
-    (first (for [line lines
-                 :let [s
-                       (set (map (partial get squares)
-                                 line))]
-                 :when (= 1 (count s))
-                 winner s
-                 :when (not (nil? winner))]
-             winner))))
+  (let [lines [[0 1 2] [3 4 5] [6 7 8]
+               [0 3 6] [1 4 7] [2 5 8]
+               [0 4 8] [2 4 6]]]
+    (some (fn [line]
+            (let [[a b c] (map squares line)]
+              (when (and a (= a b c))
+                a)))
+          lines)))
 
 ;; Provides the board's squares' `on-click` function.
 ;; Updates global game state. 
