@@ -3,11 +3,13 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]))
 
+;; Returns a reagent hiccup component that represents one square on the board.
 (defn square [on-click, squares, i]
   [:button {:class-name "square"
             :on-click #(on-click i)}
    (get squares i)])
 
+;; Returns a reagent hiccup component that holds all nine squares.
 (defn board [on-click, squares]
   [:div
    [:div {:class-name "board-row"}
@@ -23,6 +25,8 @@
     [square on-click, squares, 7]
     [square on-click, squares, 8]]])
 
+;; Takes a tic-tac-toe board in the form of a list of player symbols and compares it with each possible set of winning positions.
+;; Returns a non nil string character representing the winner, if there is one.
 (defn winner-check [squares]
   (let [lines
         [[0, 1, 2]
@@ -42,6 +46,10 @@
                  :when (not (nil? winner))]
              winner))))
 
+;; Provides the board's squares' `on-click` function.
+;; Updates global game state. 
+;; Invoked with the square's index itself whenver an individual square is clicked.
+;; See `board` and `game-fn`.
 (defn handle-click-fn [gs]
   (fn [i]
     (let [history (:history (deref gs))
@@ -69,6 +77,7 @@
                      (update :is-x-next? not))))
         nil))))
 
+;; Returns state to represent the playing of a tic-tac-toe game.
 (def start-game-state
   (let [tictactoe-squares-count 9]
     {:history [{:squares (vec (repeat tictactoe-squares-count
@@ -76,6 +85,7 @@
      :step-number 0
      :is-x-next? true}))
 
+;; Updates game state to a requested `move-index`.
 (defn jump-to! [gs, move-index]
   (swap! gs (fn [gs]
               (-> gs
@@ -83,11 +93,13 @@
                   (assoc :is-x-next?
                          (zero? (mod move-index 2)))))))
 
+;; Returns button for resetting game state to previously made move.
 (defn jump-to-button [gs, move-index, desc]
   [:button {:on-click (fn []
                         (jump-to! gs move-index))}
    desc])
 
+;; Provides move history ui.
 (defn game-info [gs, history, status]
   [:div {:class-name "game-info"}
    [:div status]
@@ -98,7 +110,8 @@
                        (str "Go to move #" i))]]
       [:li {:key i} [jump-to-button gs i desc]])]])
 
-(defn game []
+;; Provides reagent hiccup component with a state atom for the game.
+(defn game-fn []
   (let [gs (atom start-game-state)]
     (fn []
       (let [game-state (deref gs)
@@ -116,8 +129,10 @@
           (:squares current)]
          [game-info gs (:history game-state) status]]))))
 
+;; Calls render with root hiccup component and js app container element.
 (defn mount-root []
-  (rdom/render [(game)] (.getElementById js/document "app")))
+  (rdom/render [(game-fn)] (.getElementById js/document "app")))
 
+;; Provides execution starting point.
 (defn init! []
   (mount-root))
