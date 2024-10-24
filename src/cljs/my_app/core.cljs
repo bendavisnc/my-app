@@ -46,30 +46,19 @@
 ;; See `board` and `game-fn`.
 (defn handle-click-fn [gs]
   (fn [i]
-    (let [history (:history (deref gs))
-          step-number (:step-number (deref gs))
-          history* (subvec history
-                           0
-                           (inc step-number))
-          current (last history*)
-          squares (:squares current)
-          is-square-occupied? (get squares i)
+    (let [{:keys [history step-number is-x-next?]} @gs
+          history* (subvec history 0 (inc step-number))
+          {:keys [squares]} (last history*)
+          square-occupied? (get squares i)
           winner (winner-check squares)
-          should-update-state? (not (or is-square-occupied?
-                                        winner))]
-      (if should-update-state?
+          should-update-state? (and (not square-occupied?) (not winner))]
+      (when should-update-state?
         (swap! gs
                (fn [gs]
                  (-> gs
-                     (assoc :history (conj history*
-                                           {:squares (assoc squares
-                                                            i
-                                                            (if (:is-x-next? gs)
-                                                              x
-                                                              o))}))
+                     (update :history conj {:squares (assoc squares i (if is-x-next? x o))})
                      (assoc :step-number (count history*))
-                     (update :is-x-next? not))))
-        nil))))
+                     (update :is-x-next? not))))))))
 
 ;; Returns state to represent the playing of a tic-tac-toe game.
 (def start-game-state
@@ -108,20 +97,16 @@
 (defn game-fn []
   (let [gs (atom start-game-state)]
     (fn []
-      (let [game-state (deref gs)
-            step-number (:step-number  game-state)
-            current (get (:history   game-state)
-                         step-number)
-            winner (winner-check (:squares current))
-            is-x-next? (:is-x-next?  game-state)
+      (let [{:keys [step-number history is-x-next?]} @gs
+            {:keys [squares]} (get history step-number)
+            winner (winner-check squares)
             status (if winner
                      (str "Winner: " winner)
                      (str "Next player: " (if is-x-next? x o)))]
         [:div {:class-name "game"}
-         [:div {:class-name "game-board"}]
-         [board (handle-click-fn gs)
-          (:squares current)]
-         [game-info gs (:history game-state) status]]))))
+         [:div {:class-name "game-board"}
+          [board (handle-click-fn gs) squares]]
+         [game-info gs history status]]))))
 
 ;; Calls render with root hiccup component and js app container element.
 (defn mount-root []
