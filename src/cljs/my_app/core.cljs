@@ -3,6 +3,9 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]))
 
+(def x "✘")
+(def o "⭕")
+
 ;; Returns a reagent hiccup component that represents one square on the board.
 (defn square [on-click, squares, i]
   [:button {:class-name "square"
@@ -48,7 +51,7 @@
 
 ;; Provides the board's squares' `on-click` function.
 ;; Updates global game state. 
-;; Invoked with the square's index itself whenver an individual square is clicked.
+;; Invoked with the square's index itself whenever an individual square is clicked.
 ;; See `board` and `game-fn`.
 (defn handle-click-fn [gs]
   (fn [i]
@@ -71,8 +74,8 @@
                                            {:squares (assoc squares
                                                             i
                                                             (if (:is-x-next? gs)
-                                                              "X"
-                                                              "0"))}))
+                                                              x
+                                                              o))}))
                      (assoc :step-number (count history*))
                      (update :is-x-next? not))))
         nil))))
@@ -122,7 +125,7 @@
             is-x-next? (:is-x-next?  game-state)
             status (if winner
                      (str "Winner: " winner)
-                     (str "Next player: " (if is-x-next? "X" "O")))]
+                     (str "Next player: " (if is-x-next? x o)))]
         [:div {:class-name "game"}
          [:div {:class-name "game-board"}]
          [board (handle-click-fn gs)
