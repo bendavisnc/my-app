@@ -16,13 +16,28 @@
   (fn [_ _]
     (let [squares-how-many 9]
       {:squares (vec (repeat squares-how-many
-                            nil))})))
+                            nil))
+       :is-x-next? true})))
 
 (rf/reg-event-db
   :square-clicked            
   (fn [db [_ i]]
-    (println ["event handler", db, i])
-    db))
+
+    (let [squares (:squares db)
+          is-x-next? (:is-x-next? db)
+          square-occupied? (squares i)
+          should-update-state? (not square-occupied?)]
+      (println ["event handler", db, i])
+      (if (not should-update-state?)
+        db
+        ;; else
+        (-> db
+            (update :squares
+                    assoc
+                    i
+                    (if is-x-next? x o))
+            (update :is-x-next? not))))))
+                
 
 (rf/reg-sub
   :square
@@ -31,7 +46,8 @@
     (get-in db [:squares i])))
 
 (defn square [i]
-  (let [v @(rf/subscribe [:square i])
+  (let [_ (println "@square")
+        v @(rf/subscribe [:square i])
         emit (fn [_] (rf/dispatch [:square-clicked i]))] 
     [:button.square {:on-click emit}
                                  
