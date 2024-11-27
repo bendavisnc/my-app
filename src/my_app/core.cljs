@@ -9,20 +9,32 @@
 (def x "✘")
 (def o "⭕")
 
+;; event handlers
+
 (rf/reg-event-db
   :initialize
   (fn [_ _]
-    {}))
+    (let [squares-how-many 9]
+      {:squares (vec (repeat squares-how-many
+                            nil))})))
+
+(rf/reg-event-db
+  :square-clicked            
+  (fn [db [_ i]]
+    (println ["event handler", db, i])
+    db))
 
 (rf/reg-sub
   :square
-  (fn [db _]
-    x))
+  (fn [db [_, i]]
+    (println ["subscription handler", db, i])
+    (get-in db [:squares i])))
 
 (defn square [i]
-  (let [v @(rf/subscribe [:square i])]
-    [:button.square {:on-click (fn [e]
-                                 (println (str "hi from " i)))}
+  (let [v @(rf/subscribe [:square i])
+        emit (fn [_] (rf/dispatch [:square-clicked i]))] 
+    [:button.square {:on-click emit}
+                                 
                     v]))
 
 (defn board []
