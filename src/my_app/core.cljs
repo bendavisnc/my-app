@@ -1,56 +1,47 @@
 (ns my-app.core
-    (:require 
-      [reagent.dom.client :as rdc]
-      [re-frame.core :as rf]))
-
+  (:require 
+    [reagent.dom.client :as rdc]
+    [re-frame.core :as rf]))
 
 (enable-console-print!)
 
 (def x "✘")
 (def o "⭕")
+(def squares-count 9)
 
-;; utility functions
-
+;; Utility functions
 (defn winner-check [squares]
   (let [lines [[0 1 2] [3 4 5] [6 7 8]
                [0 3 6] [1 4 7] [2 5 8]
                [0 4 8] [2 4 6]]]
     (some (fn [line]
             (let [[a b c] (map squares line)]
-              (when (and a (= a b c))
-                a)))
+              (when (and a (= a b c)) a)))
           lines)))
 
-;; event handlers
-
+;; Event handlers
 (rf/reg-event-db
   :initialize
   (fn [_ _]
-    (let [squares-how-many 9]
-      {:step-number 0
-       :history [{:squares (vec (repeat squares-how-many
-                                        nil))}]
-       :is-x-next? true})))
+    {:step-number 0
+     :history [{:squares (vec (repeat squares-count nil))}]
+     :is-x-next? true}))
 
 (rf/reg-event-db
-  :square-clicked            
+  :square-clicked
   (fn [db [_ i]]
-    (let [{:keys [history, step-number, is-x-next?]} db 
+    (let [{:keys [history step-number is-x-next?]} db
           history* (subvec history 0 (inc step-number))
           {:keys [squares]} (last history*)
           winner (winner-check squares)
           square-occupied? (squares i)
-          should-update-state? (not (or square-occupied?
-                                        winner))]         
-      (if (not should-update-state?)
+          can-update? (not (or square-occupied? winner))]
+      (if-not can-update?
         db
-        ;; else
         (-> db
             (assoc :history
                    (conj history*
-                         {:squares (assoc squares 
-                                          i
-                                          (if is-x-next? x o))}))
+                         {:squares (assoc squares i (if is-x-next? x o))}))
             (assoc :step-number (count history*))
             (assoc :winner winner)
             (update :is-x-next? not))))))
@@ -60,60 +51,45 @@
   (fn [db [_ i]]
     (-> db
         (assoc :step-number i)
-        (assoc :is-x-next?
-                (zero? (mod i 2))))))
+        (assoc :is-x-next? (zero? (mod i 2))))))
 
+;; Subscriptions
 (rf/reg-sub
   :square
-  (fn [db [_, i]]
+  (fn [db [_ i]]
     (get-in db [:history (:step-number db) :squares i])))
 
 (rf/reg-sub
   :history
-  (fn [db [_]]
-    (:history db)))
+  (fn [db _] (:history db)))
 
 (rf/reg-sub
   :is-x-next?
-  (fn [db [_]]
-    (:is-x-next? db)))
+  (fn [db _] (:is-x-next? db)))
 
 (rf/reg-sub
   :winner
-  (fn [db [_]]
-    (let [{:keys [history, step-number]} db 
-          history* (subvec history 0 (inc step-number))
-          {:keys [squares]} (last history*)]
+  (fn [db _]
+    (let [{:keys [history step-number]} db
+          {:keys [squares]} (last (subvec history 0 (inc step-number)))]
       (winner-check squares))))
 
-;; ui components
-
+;; UI components
 (defn square [i]
-  (let [v @(rf/subscribe [:square i])
-        emit (fn [_] (rf/dispatch [:square-clicked i]))] 
-    [:button.square {:on-click emit}
-                                 
-                    v]))
+  (let [v @(rf/subscribe [:square i])]
+    [:button.square {:on-click #(rf/dispatch [:square-clicked i])}
+     v]))
 
 (defn board []
   [:div
-   [:div.board-row
-    [square 0]
-    [square 1]
-    [square 2]]
-   [:div.board-row
-    [square 3]
-    [square 4]
-    [square 5]]
-   [:div.board-row
-    [square 6]
-    [square 7]
-    [square 8]]])
+   (for [row (partition 3 (range squares-count))]
+     ^{:key row}
+     [:div.board-row (for [i row]
+                       ^{:key i} [square i])])])
 
-(defn jump-to-button [move-index, desc]
-  (let [emit (fn [_] (rf/dispatch [:history-jump move-index]))] 
-    [:button {:on-click emit}
-      desc]))
+(defn jump-to-button [move-index desc]
+  [:button {:on-click #(rf/dispatch [:history-jump move-index])}
+   desc])
 
 (defn game-info []
   (let [history @(rf/subscribe [:history])
@@ -122,32 +98,28 @@
         status (if winner
                  (str "Winner: " winner)
                  (str "Next player: " (if is-x-next? x o)))]
-
-
-    [:div.game-info [:div status]
-                    [:ol (for [i (range (count history))
-                               :let [desc (if (zero? i)
-                                            "Go to game start"
-                                            (str "Go to move #" i))]]
-                           [:li {:key i} 
-                               [jump-to-button i desc]])]]))
+    [:div.game-info
+     [:div status]
+     [:ol (for [i (range (count history))]
+            ^{:key i}
+            [:li [jump-to-button i
+                  (if (zero? i)
+                    "Go to game start"
+                    (str "Go to move #" i))]])]]))
 
 (defn ui []
   [:div.game
-    [:div.game-board
-      [board]]
-    [game-info]])
+   [:div.game-board [board]]
+   [game-info]])
 
 (defonce app-root
   (rdc/create-root (js/document.getElementById "app")))
 
-(defn mount-ui
-  []
-  (rdc/render app-root [ui])) ;; mount the application's ui
+(defn mount-ui []
+  (rdc/render app-root [ui]))
 
-(defn run
-  []
-  (rf/dispatch-sync [:initialize])     ;; puts a value into application state
+(defn run []
+  (rf/dispatch-sync [:initialize])
   (mount-ui))
 
 (run)
