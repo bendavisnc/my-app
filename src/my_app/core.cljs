@@ -15,16 +15,17 @@
   :initialize
   (fn [_ _]
     (let [squares-how-many 9]
-      {:squares (vec (repeat squares-how-many
-                            nil))
+      {:step-number 0
+       :history [{:squares (vec (repeat squares-how-many
+                                        nil))}]
        :is-x-next? true})))
 
 (rf/reg-event-db
   :square-clicked            
   (fn [db [_ i]]
-
-    (let [squares (:squares db)
-          is-x-next? (:is-x-next? db)
+    (let [{:keys [history, step-number, is-x-next?]} db 
+          history* (subvec history 0 (inc step-number))
+          {:keys [squares]} (last history*)
           square-occupied? (squares i)
           should-update-state? (not square-occupied?)]
       (println ["event handler", db, i])
@@ -32,28 +33,38 @@
         db
         ;; else
         (-> db
-            (update :squares
-                    assoc
-                    i
-                    (if is-x-next? x o))
+            (update :history
+                    conj
+                    {:squares (assoc squares 
+                                     i
+                                     (if is-x-next? x o))})
+            (assoc :step-number (count history*))
             (update :is-x-next? not))))))
-                
+
+(rf/reg-event-db
+  :history-jump
+  (fn [db [_ i]]
+    (-> db
+        (assoc :step-number i)
+        (assoc :is-x-next?
+                (zero? (mod i 2))))))
 
 (rf/reg-sub
   :square
   (fn [db [_, i]]
     (println ["subscription handler", db, i])
-    (get-in db [:squares i])))
+    (get-in db [:history (:step-number db) :squares i])))
 
 (rf/reg-sub
   :status
   (fn [db [_, i]]
-    (str "todo, status")))
+    (let [is-x-next? (:is-x-next? db)]
+      (str "Next player: " (if is-x-next? x o)))))
 
 (rf/reg-sub
   :history
-  (fn [db [_, i]]
-    []))
+  (fn [db [_]]
+    (:history db)))
 
 ;; ui components
 
@@ -81,9 +92,9 @@
     [square 8]]])
 
 (defn jump-to-button [move-index, desc]
-  [:button {:on-click (fn []
-                        (println "beans"))}
-    desc])
+  (let [emit (fn [_] (rf/dispatch [:history-jump move-index]))] 
+    [:button {:on-click emit}
+      desc]))
 
 (defn game-info []
   (let [history @(rf/subscribe [:history])
