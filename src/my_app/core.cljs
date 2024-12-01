@@ -45,6 +45,18 @@
     (println ["subscription handler", db, i])
     (get-in db [:squares i])))
 
+(rf/reg-sub
+  :status
+  (fn [db [_, i]]
+    (str "todo, status")))
+
+(rf/reg-sub
+  :history
+  (fn [db [_, i]]
+    []))
+
+;; ui components
+
 (defn square [i]
   (let [_ (println "@square")
         v @(rf/subscribe [:square i])
@@ -68,10 +80,27 @@
     [square 7]
     [square 8]]])
 
+(defn jump-to-button [move-index, desc]
+  [:button {:on-click (fn []
+                        (println "beans"))}
+    desc])
+
+(defn game-info []
+  (let [history @(rf/subscribe [:history])
+        status @(rf/subscribe [:status])]
+    [:div.game-info [:div status]
+                    [:ol (for [i (range (count history))
+                               :let [desc (if (zero? i)
+                                            "Go to game start"
+                                            (str "Go to move #" i))]]
+                           [:li {:key i} 
+                               [jump-to-button i desc]])]]))
+
 (defn ui []
   [:div.game
     [:div.game-board
-      [board]]])
+      [board]]
+    [game-info]])
 
 (defonce app-root
   (rdc/create-root (js/document.getElementById "app")))
