@@ -40,18 +40,17 @@
           {:keys [squares]} (last history*)
           winner (winner-check squares)
           square-occupied? (squares i)
-          should-update-state? (and (not square-occupied?)
-                                    (not winner))]         
-      (println ["event handler", db, i])
+          should-update-state? (not (or square-occupied?
+                                        winner))]         
       (if (not should-update-state?)
         db
         ;; else
         (-> db
-            (update :history
-                    conj
-                    {:squares (assoc squares 
-                                     i
-                                     (if is-x-next? x o))})
+            (assoc :history
+                   (conj history*
+                         {:squares (assoc squares 
+                                          i
+                                          (if is-x-next? x o))}))
             (assoc :step-number (count history*))
             (assoc :winner winner)
             (update :is-x-next? not))))))
@@ -67,7 +66,6 @@
 (rf/reg-sub
   :square
   (fn [db [_, i]]
-    (println ["subscription handler", db, i])
     (get-in db [:history (:step-number db) :squares i])))
 
 (rf/reg-sub
@@ -86,8 +84,6 @@
     (let [{:keys [history, step-number]} db 
           history* (subvec history 0 (inc step-number))
           {:keys [squares]} (last history*)]
-      (println "cool beans")
-      (println squares)
       (winner-check squares))))
 
 ;; ui components
