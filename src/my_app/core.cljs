@@ -9,6 +9,18 @@
 (def x "✘")
 (def o "⭕")
 
+;; utility functions
+
+(defn winner-check [squares]
+  (let [lines [[0 1 2] [3 4 5] [6 7 8]
+               [0 3 6] [1 4 7] [2 5 8]
+               [0 4 8] [2 4 6]]]
+    (some (fn [line]
+            (let [[a b c] (map squares line)]
+              (when (and a (= a b c))
+                a)))
+          lines)))
+
 ;; event handlers
 
 (rf/reg-event-db
@@ -26,8 +38,10 @@
     (let [{:keys [history, step-number, is-x-next?]} db 
           history* (subvec history 0 (inc step-number))
           {:keys [squares]} (last history*)
+          winner (winner-check squares)
           square-occupied? (squares i)
-          should-update-state? (not square-occupied?)]
+          should-update-state? (and (not square-occupied?)
+                                    (not winner))]         
       (println ["event handler", db, i])
       (if (not should-update-state?)
         db
@@ -39,6 +53,7 @@
                                      i
                                      (if is-x-next? x o))})
             (assoc :step-number (count history*))
+            (assoc :winner winner)
             (update :is-x-next? not))))))
 
 (rf/reg-event-db
@@ -56,21 +71,29 @@
     (get-in db [:history (:step-number db) :squares i])))
 
 (rf/reg-sub
-  :status
-  (fn [db [_, i]]
-    (let [is-x-next? (:is-x-next? db)]
-      (str "Next player: " (if is-x-next? x o)))))
-
-(rf/reg-sub
   :history
   (fn [db [_]]
     (:history db)))
 
+(rf/reg-sub
+  :is-x-next?
+  (fn [db [_]]
+    (:is-x-next? db)))
+
+(rf/reg-sub
+  :winner
+  (fn [db [_]]
+    (let [{:keys [history, step-number]} db 
+          history* (subvec history 0 (inc step-number))
+          {:keys [squares]} (last history*)]
+      (println "cool beans")
+      (println squares)
+      (winner-check squares))))
+
 ;; ui components
 
 (defn square [i]
-  (let [_ (println "@square")
-        v @(rf/subscribe [:square i])
+  (let [v @(rf/subscribe [:square i])
         emit (fn [_] (rf/dispatch [:square-clicked i]))] 
     [:button.square {:on-click emit}
                                  
@@ -98,7 +121,13 @@
 
 (defn game-info []
   (let [history @(rf/subscribe [:history])
-        status @(rf/subscribe [:status])]
+        winner @(rf/subscribe [:winner])
+        is-x-next? @(rf/subscribe [:is-x-next?])
+        status (if winner
+                 (str "Winner: " winner)
+                 (str "Next player: " (if is-x-next? x o)))]
+
+
     [:div.game-info [:div status]
                     [:ol (for [i (range (count history))
                                :let [desc (if (zero? i)
