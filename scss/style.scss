@@ -1,0 +1,146 @@
+// Font and general styles
+$font-family: "Century Gothic", Futura, sans-serif;
+$base-font-size: 1em;
+$bold-font: bold;
+$font-size-large: 18vw;
+$font-size-medium: 8vw;
+$font-size-small: 16px;
+$line-height-large: 18vw;
+$line-height-medium: 8vw;
+$line-height-small: 16px;
+
+// Colors
+$white: #fff;
+$light-gray: #ddd;
+$border-color: #999;
+
+// Spacing
+$margin-small: -1px;
+$margin-medium: 6vw;
+$margin-large: 10px;
+$padding-small: 2vw;
+$padding-medium: 1vw;
+
+// Layout
+$width-large: 90vw;
+$width-medium: 42vw;
+$width-small: 30vw;
+$height-large: 30vw;
+$height-medium: 14vw;
+
+// Button styles
+$button-font-size: 16px;
+$button-font-size-landscape: 20px;
+$button-width: 40vw;
+$button-width-landscape: 20vw;
+$button-padding-top: 2vw;
+$button-padding-bottom: 2vw;
+$button-padding-landscape: 1vw;
+
+body {
+  font: $base-font-size $font-family;
+}
+
+.game-board {
+  width: $width-large;
+  align-self: center;
+
+  @media (orientation: landscape) {
+    width: $width-medium;
+    align-self: flex-start;
+  }
+}
+
+.board-row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.status {
+  margin-bottom: $margin-large;
+}
+
+.square {
+  background: $white;
+  border: 1px solid $border-color;
+  float: left;
+  font: $bold-font calc($font-size-large / $line-height-large) $font-family;
+  height: $height-large;
+  width: $width-small;
+  margin: $margin-small 0 0 $margin-small;
+  text-align: center;
+
+  &.x {
+    font-size: 26vw;
+    line-height: 26vw;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  @media (orientation: landscape) {
+    font-size: $font-size-medium;
+    line-height: $line-height-medium;
+    height: $height-medium;
+    width: $height-medium;
+
+    &.x {
+      font-size: 10vw;
+      line-height: 10vw;
+    }
+  }
+}
+
+.kbd-navigation {
+  .square:focus {
+    background: $light-gray;
+  }
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+
+  @media (orientation: landscape) {
+    flex-direction: row;
+  }
+}
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  .status,
+  .history {
+    display: flex;
+    justify-content: center;
+  }
+
+  .history {
+    ol {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li button {
+        font-size: $button-font-size;
+        min-width: $button-width;
+        margin-bottom: $margin-medium;
+        padding: $button-padding-top $button-padding-bottom;
+
+        @media (orientation: landscape) {
+          font-size: $button-font-size-landscape;
+          min-width: $button-width-landscape;
+          margin-bottom: 2vw;
+          padding: $button-padding-landscape;
+        }
+      }
+    }
+  }
+}
