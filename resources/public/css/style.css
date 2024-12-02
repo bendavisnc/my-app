@@ -1,10 +1,23 @@
 body {
-  font: 14px "Century Gothic", Futura, sans-serif;
-  margin: 20px;
+  font: 1em "Century Gothic", Futura, sans-serif;
 }
 
-ol, ul {
-  padding-left: 30px;
+.game-board {
+  width: 90vw;
+  align-self: center;
+}
+
+
+@media (orientation: landscape) {
+  .game-board {
+    width: 42vw;
+  }
+}
+
+@media (orientation: landscape) {
+  .game-board {
+    align-self: flex-start;
+  }
 }
 
 .board-row:after {
@@ -21,19 +34,42 @@ ol, ul {
   background: #fff;
   border: 1px solid #999;
   float: left;
-  font-size: 24px;
+  font-size: 18vw;
+  line-height: 18vw;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  height: 30vw;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30vw;
+}
+
+
+.square.x {
+  font-size: 26vw;
+  line-height: 26vw;
 }
 
 .square:focus {
   outline: none;
+}
+
+@media (orientation: landscape) {
+
+  .square {
+    font-size: 8vw;
+    line-height: 8vw;
+    height: 14vw;
+    width: 14vw;
+  }
+
+
+  .square.x {
+    font-size: 10vw;
+    line-height: 10vw;
+  }
+
 }
 
 .kbd-navigation .square:focus {
@@ -42,9 +78,60 @@ ol, ul {
 
 .game {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+
+@media (orientation: landscape) {
+  .game {
+    flex-direction: row;
+  }
 }
 
 .game-info {
-  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+
+.game-info .status {
+  display: flex;
+  justify-content: center;
+}
+
+
+.game-info .history {
+  display: flex;
+  justify-content: center;
+}
+
+
+.game-info .history ol {
+  display: flex;
+  list-style: none;
+  flex-direction: column;
+  align-items: center;
+  margin: 0px;
+  padding: 0px;
+}
+
+.game-info .history li button {
+  font-size: 16px;
+  min-width: 40vw;
+  margin-bottom: 6vw;
+  padding-top: 2vw;
+  padding-bottom: 2vw;
+}
+
+
+@media (orientation: landscape) {
+  .game-info .history li button {
+    min-width: 30vw;
+    font-size: 20px;
+    min-width: 20vw;
+    margin-bottom: 2vw;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+  }
 }
