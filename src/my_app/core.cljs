@@ -33,7 +33,7 @@
     (let [{:keys [history step-number is-x-next?]} db
           history* (subvec history 0 (inc step-number))
           {:keys [squares]} (last history*)
-          winner (winner-check squares)
+          winner @(rf/subscribe [:winner])
           square-occupied? (squares i)
           can-update? (not (or square-occupied? winner))]
       (if-not can-update?
@@ -76,8 +76,10 @@
 
 ;; UI components
 (defn square [i]
-  (let [v @(rf/subscribe [:square i])]
-    [:button.square {:on-click #(rf/dispatch [:square-clicked i])}
+  (let [v @(rf/subscribe [:square i])
+        is-x? (= x v)]
+    [:button.square {:class (if is-x? "x" "o") 
+                     :on-click #(rf/dispatch [:square-clicked i])}
      v]))
 
 (defn board []
@@ -99,13 +101,13 @@
                  (str "Winner: " winner)
                  (str "Next player: " (if is-x-next? x o)))]
     [:div.game-info
-     [:div status]
-     [:ol (for [i (range (count history))]
-            ^{:key i}
-            [:li [jump-to-button i
-                  (if (zero? i)
-                    "Go to game start"
-                    (str "Go to move #" i))]])]]))
+     [:div.status status]
+     [:div.history [:ol (for [i (range (count history))]
+                          ^{:key i}
+                          [:li [jump-to-button i
+                                 (if (zero? i)
+                                   "Go to game start"
+                                   (str "Go to move #" i))]])]]]))
 
 (defn ui []
   [:div.game
