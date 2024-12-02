@@ -65,7 +65,8 @@ body {
   background: $white;
   border: 1px solid $border-color;
   float: left;
-  font: $bold-font calc($font-size-large / $line-height-large) $font-family;
+  font: $bold-font $font-size-large $font-family;
+  line-height: $font-size-large;
   height: $height-large;
   width: $width-small;
   margin: $margin-small 0 0 $margin-small;

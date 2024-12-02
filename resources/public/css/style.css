@@ -6,24 +6,17 @@ body {
   width: 90vw;
   align-self: center;
 }
-
-
 @media (orientation: landscape) {
   .game-board {
     width: 42vw;
-  }
-}
-
-@media (orientation: landscape) {
-  .game-board {
     align-self: flex-start;
   }
 }
 
 .board-row:after {
-  clear: both;
   content: "";
   display: table;
+  clear: both;
 }
 
 .status {
@@ -34,42 +27,31 @@ body {
   background: #fff;
   border: 1px solid #999;
   float: left;
-  font-size: 18vw;
+  font: bold 18vw "Century Gothic", Futura, sans-serif;
   line-height: 18vw;
-  font-weight: bold;
   height: 30vw;
-  margin-right: -1px;
-  margin-top: -1px;
-  padding: 0;
-  text-align: center;
   width: 30vw;
+  margin: -1px 0 0 -1px;
+  text-align: center;
 }
-
-
 .square.x {
   font-size: 26vw;
   line-height: 26vw;
 }
-
 .square:focus {
   outline: none;
 }
-
 @media (orientation: landscape) {
-
   .square {
     font-size: 8vw;
     line-height: 8vw;
     height: 14vw;
     width: 14vw;
   }
-
-
   .square.x {
     font-size: 10vw;
     line-height: 10vw;
   }
-
 }
 
 .kbd-navigation .square:focus {
@@ -80,8 +62,6 @@ body {
   display: flex;
   flex-direction: column;
 }
-
-
 @media (orientation: landscape) {
   .game {
     flex-direction: row;
@@ -93,45 +73,32 @@ body {
   flex-direction: column;
   flex-grow: 1;
 }
-
-
-.game-info .status {
-  display: flex;
-  justify-content: center;
-}
-
-
+.game-info .status,
 .game-info .history {
   display: flex;
   justify-content: center;
 }
-
-
 .game-info .history ol {
   display: flex;
-  list-style: none;
   flex-direction: column;
   align-items: center;
-  margin: 0px;
-  padding: 0px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-
-.game-info .history li button {
+.game-info .history ol li button {
   font-size: 16px;
   min-width: 40vw;
   margin-bottom: 6vw;
-  padding-top: 2vw;
-  padding-bottom: 2vw;
+  padding: 2vw 2vw;
 }
-
-
 @media (orientation: landscape) {
-  .game-info .history li button {
-    min-width: 30vw;
+  .game-info .history ol li button {
     font-size: 20px;
     min-width: 20vw;
     margin-bottom: 2vw;
-    padding-top: 1vw;
-    padding-bottom: 1vw;
+    padding: 1vw;
   }
 }
+
+/*# sourceMappingURL=style.css.map */
