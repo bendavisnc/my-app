@@ -53,11 +53,7 @@
         (assoc :step-number i)
         (assoc :is-x-next? (zero? (mod i 2))))))
 
-;; Subscriptions
-(rf/reg-sub
-  :square
-  (fn [db [_ i]]
-    (get-in db [:history (:step-number db) :squares i])))
+;; Subscriptions (simple)
 
 (rf/reg-sub
   :history
@@ -68,18 +64,42 @@
   (fn [db _] (:is-x-next? db)))
 
 (rf/reg-sub
+  :step-number
+  (fn [db _] (:step-number db)))
+
+;; Subscriptions (derived)
+
+(rf/reg-sub
+  :squares
+  (fn [_, _]
+    [(rf/subscribe [:step-number]),
+     (rf/subscribe [:history])])
+  (fn [[step-number, history], _]
+    (-> history
+        (subvec 0 (inc step-number))
+        last
+        :squares)))
+
+(rf/reg-sub
+  :square
+  (fn [_, _]
+    [(rf/subscribe [:squares])])
+  (fn [[squares], [_, i]]
+    (squares i)))
+
+(rf/reg-sub
   :winner
-  (fn [db _]
-    (let [{:keys [history step-number]} db
-          {:keys [squares]} (last (subvec history 0 (inc step-number)))]
-      (winner-check squares))))
+  (fn [_, _]
+    [(rf/subscribe [:squares])])
+  (fn [[squares], _]
+    (winner-check squares)))
 
 (rf/reg-sub
   :status
   (fn [_, _]
     [(rf/subscribe [:is-x-next?]),
      (rf/subscribe [:winner])])
-  (fn [[is-x-next?, winner] _]
+  (fn [[is-x-next?, winner], _]
     (if winner
       (str "Winner: " winner)
       ;; else
