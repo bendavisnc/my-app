@@ -74,6 +74,17 @@
           {:keys [squares]} (last (subvec history 0 (inc step-number)))]
       (winner-check squares))))
 
+(rf/reg-sub
+  :status
+  (fn [_, _]
+    [(rf/subscribe [:is-x-next?]),
+     (rf/subscribe [:winner])])
+  (fn [[is-x-next?, winner] _]
+    (if winner
+      (str "Winner: " winner)
+      ;; else
+      (str "Next player: " (if is-x-next? x o)))))
+
 ;; UI components
 (defn square [i]
   (let [v @(rf/subscribe [:square i])
@@ -95,11 +106,7 @@
 
 (defn game-info []
   (let [history @(rf/subscribe [:history])
-        winner @(rf/subscribe [:winner])
-        is-x-next? @(rf/subscribe [:is-x-next?])
-        status (if winner
-                 (str "Winner: " winner)
-                 (str "Next player: " (if is-x-next? x o)))]
+        status @(rf/subscribe [:status])]
     [:div.game-info
      [:div.status status]
      [:div.history [:ol (for [i (range (count history))]
