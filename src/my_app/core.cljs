@@ -30,19 +30,19 @@
 (rf/reg-event-db
   :square-clicked
   (fn [db [_ i]]
-    (let [{:keys [history step-number is-x-next?]} db
-          history* (subvec history 0 (inc step-number))
-          {:keys [squares]} (last history*)
+    (let [history-effective @(rf/subscribe [:history-effective])
+          is-x-next? @(rf/subscribe [:is-x-next?])
           winner @(rf/subscribe [:winner])
+          squares @(rf/subscribe [:squares])
           square-occupied? (squares i)
           can-update? (not (or square-occupied? winner))]
       (if-not can-update?
         db
         (-> db
             (assoc :history
-                   (conj history*
+                   (conj history-effective
                          {:squares (assoc squares i (if is-x-next? x o))}))
-            (assoc :step-number (count history*))
+            (assoc :step-number (count history-effective))
             (assoc :winner winner)
             (update :is-x-next? not))))))
 
@@ -70,15 +70,20 @@
 ;; Subscriptions (derived)
 
 (rf/reg-sub
-  :squares
+  :history-effective
   (fn [_, _]
     [(rf/subscribe [:step-number]),
      (rf/subscribe [:history])])
   (fn [[step-number, history], _]
     (-> history
-        (subvec 0 (inc step-number))
-        last
-        :squares)))
+        (subvec 0 (inc step-number)))))
+
+(rf/reg-sub
+  :squares
+  (fn [_, _]
+     [(rf/subscribe [:history-effective])])
+  (fn [[history-effective], _]
+    (-> history-effective last :squares)))
 
 (rf/reg-sub
   :square
