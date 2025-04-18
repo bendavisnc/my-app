@@ -41,6 +41,7 @@ body {
 .square:focus {
   outline: none;
 }
+
 @media (orientation: landscape) {
   .square {
     font-size: 8vw;

@@ -1,0 +1,22 @@
+
+
+.game-board {
+  width: 36vw;
+}
+
+.square {
+  width: 6vw;
+}
+
+@media (orientation: landscape) {
+  .square {
+    font-size: 6vw;
+    line-height: 6vw;
+    height: auto;
+    width: 6vw;
+  }
+  .square.x {
+    font-size: unset;
+    line-height: unset;
+  }
+}
