@@ -9,7 +9,7 @@
 (defn square [& {:keys [index, piece]}]
   (let [class ({:x "x" :o "o" :empty "empty"} piece)]
     [:button.square {:class class
-                     :on-click #(re-frame/dispatch [:on-square-click index])}
+                     :on-click #(re-frame/dispatch [::models/on-square-select index])}
      piece]))
 
 (defn board [squares]
@@ -47,6 +47,7 @@
 (defn tictactoe []
   (let [model (re-frame/subscribe [::models/tictactoe])]
     (fn []
+      (println @model)
       [tictactoe-component @model])))
 
 

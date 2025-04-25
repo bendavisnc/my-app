@@ -1,5 +1,7 @@
 (ns my-app.models.tictactoe
-  (:require [re-frame.core :as re-frame]))
+  (:require
+   [my-app.pieces.tictactoe :as pieces]
+   [re-frame.core :as re-frame]))
 
 (def squares-count 9)
 
@@ -12,12 +14,29 @@
               (when (and a (= a b c)) a)))
           lines)))
 
+(defn apply-new-move [squares index is-x-next?]
+  (when-not (squares index) 
+    (assoc squares index (if is-x-next? pieces/x pieces/o))))
+
 (re-frame/reg-event-db
  :initialize
  (fn [_ _]
    {:step-number 0
     :history [{:squares (vec (repeat squares-count nil))}]
     :is-x-next? true}))
+
+(re-frame/reg-event-db
+ ::on-square-select
+ (fn [db [_ index]]
+   (if-let [new-move (apply-new-move (get-in db [:history (:step-number db) :squares]) index (:is-x-next? db))]
+     (let [new-history (conj (vec (take (inc (:step-number db)) (:history db)))
+                             {:squares new-move})]
+       (-> db
+           (assoc :history new-history)
+           (assoc :step-number (dec (count new-history)))
+           (assoc :is-x-next? (not (:is-x-next? db)))
+           (assoc :winner (winner-check new-move))))
+     db)))
 
 (re-frame/reg-sub
  ::squares

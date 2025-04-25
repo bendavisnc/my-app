@@ -1,6 +1,7 @@
 (ns my-app.core
-  (:require 
+  (:require
    [my-app.view :as view]
+   [re-frame.core :as re-frame]
    [reagent.dom.client :as reagent-dom]))
 
 
@@ -14,6 +15,7 @@
 
 (defn- init []
   (mount-app))
+  (re-frame/dispatch-sync [:initialize])
 
 (defn on-figwheel-reload []
   (mount-app))
