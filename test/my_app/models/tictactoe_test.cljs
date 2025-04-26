@@ -14,7 +14,8 @@
    (let [t (re-frame/subscribe [::model/tictactoe])]
      (testing "initial state"
        (re-frame/dispatch [:initialize])
-       (is (= {:squares [nil, nil, nil, nil, nil, nil, nil, nil, nil]}
+       (is (= {:squares [nil, nil, nil, nil, nil, nil, nil, nil, nil]
+               :winner nil}
               @t))
        (is (s/valid? ::spec/component @t))))))
 
@@ -24,7 +25,8 @@
      (testing "new move"
        (re-frame/dispatch-sync [:initialize])
        (re-frame/dispatch [::model/on-square-select 0])
-       (is (= {:squares [pieces/x, nil, nil, nil, nil, nil, nil, nil, nil]}
+       (is (= {:squares [pieces/x, nil, nil, nil, nil, nil, nil, nil, nil]
+               :winner nil}
               @t))
       ;;  (println (s/explain-str ::spec/component @t))
        (is (s/valid? ::spec/component @t))))))

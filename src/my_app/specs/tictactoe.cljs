@@ -8,13 +8,14 @@
 
 (s/def ::o #{pieces/o})
 
-(s/def ::square (s/with-gen
-                   (s/or :x ::x
-                         :o ::o
-                         :empty nil?)
-                   #(s/gen #{pieces/x pieces/o nil})))
+(s/def ::maybe-piece (s/with-gen (s/or :x ::x
+                                       :o ::o
+                                       :empty nil?)
+                                 #(s/gen #{pieces/x pieces/o nil})))
 
-(s/def ::squares (s/coll-of ::square))
+(s/def ::squares (s/coll-of ::maybe-piece))
+
+(s/def ::winner ::maybe-piece)
 
 (s/def ::component
-  (s/keys :req-un [::squares]))
+  (s/keys :req-un [::squares, ::winner]))

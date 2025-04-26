@@ -1,9 +1,9 @@
 (ns my-app.views.tictactoe
-  (:require 
-   [my-app.pieces.tictactoe :as pieces]
-   [my-app.models.tictactoe :as models]
-   [clojure.spec.alpha :as s]
+  (:require
    [cljs.math :as math]
+   [clojure.spec.alpha :as s]
+   [my-app.models.tictactoe :as models]
+   [my-app.specs.tictactoe :as spec]
    [re-frame.core :as re-frame]))
 
 (defn square [& {:keys [index, piece]}]
@@ -41,8 +41,8 @@
               :status (:status model)]])     
 
   
-;; (s/fdef tictactoe-component
-;;   :args (s/cat :model ::spec/component))
+(s/fdef tictactoe-component
+        :args (s/cat :model ::spec/component))
 
 (defn tictactoe []
   (let [model (re-frame/subscribe [::models/tictactoe])]

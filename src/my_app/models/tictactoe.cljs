@@ -15,7 +15,7 @@
           lines)))
 
 (defn apply-new-move [squares index is-x-next?]
-  (when-not (squares index) 
+  (when-not (squares index)
     (assoc squares index (if is-x-next? pieces/x pieces/o))))
 
 (re-frame/reg-event-db
@@ -39,13 +39,28 @@
      db)))
 
 (re-frame/reg-sub
+ ::is-x-next?
+ (fn [db [_ _]]
+  (:is-x-next? db)))
+
+(re-frame/reg-sub
  ::squares
  (fn [db [_ _]]
    (:squares (last (:history db)))))
 
 (re-frame/reg-sub
+ ::winner
+ (fn []
+   [(re-frame/subscribe [::squares]), (re-frame/subscribe [::is-x-next?])])
+ (fn [[squares, is-x-next?]]
+   (when-let [_ (winner-check squares)]
+     (let [last-piece (if is-x-next? pieces/o pieces/x)] 
+       last-piece))))
+
+(re-frame/reg-sub
  ::tictactoe
  (fn []
-   [(re-frame/subscribe [::squares])])
- (fn [[squares]]
-   {:squares squares}))
+   [(re-frame/subscribe [::squares]), (re-frame/subscribe [::winner])])
+ (fn [[squares, winner]]
+   {:squares squares
+    :winner winner}))
