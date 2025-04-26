@@ -1,5 +1,6 @@
 (ns my-app.view
-  (:require [my-app.views.tictactoe :as tictactoe]))
+  (:require
+   [my-app.views.tictactoe :as tictactoe]))
 
 (defn ui []
   [tictactoe/tictactoe])

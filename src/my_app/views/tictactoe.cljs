@@ -15,22 +15,22 @@
 (defn board [squares]
   [:div
    (let [squares-count (count squares)]
-    (for [row (partition (math/sqrt squares-count) (range squares-count))]
-        ^{:key row}
-        [:div.board-row (for [i row]
+     (for [row (partition (math/sqrt squares-count) (range squares-count))]
+       ^{:key row}
+       [:div.board-row (for [i row]
                          ^{:key i} [square :index i :piece (get squares i)])]))])
 
 (defn jump-to-button [index]
   (let [description (if (zero? index)
                       "Go to game start"
-                     (str "Go to move #" index))]
+                      (str "Go to move #" index))]
     [:button {:on-click #(re-frame/dispatch [::models/on-move-history-select index])}
-      description]))
+     description]))
 
 (defn game-info [& {:keys [history, status]}]
   [:div.game-info
-    [:div.status status]
-    [:div.history [:ol (for [i (range (count history))]
+   [:div.status status]
+   [:div.history [:ol (for [i (range (count history))]
                         ^{:key i}
                         [:li [jump-to-button i]])]]])
 
@@ -38,9 +38,8 @@
   [:div.game
    [:div.game-board [board (:squares model)]]
    [game-info :history (:history model)
-              :status (:status model)]])     
+              :status (:status model)]])
 
-  
 (s/fdef tictactoe-component
         :args (s/cat :model ::spec/component))
 
@@ -49,5 +48,3 @@
     (fn []
       (println @model)
       [tictactoe-component @model])))
-
-

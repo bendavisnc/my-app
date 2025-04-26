@@ -3,7 +3,6 @@
    [clojure.spec.alpha :as s]
    [my-app.pieces.tictactoe :as pieces]))
 
-
 (s/def ::x #{pieces/x})
 
 (s/def ::o #{pieces/o})
@@ -24,7 +23,7 @@
 (s/def ::history (s/coll-of ::history-item))
 
 (s/def ::component
-  (s/keys :req-un [::squares,
+  (s/keys :req-un [::squares
                    ::winner
                    ::status
                    ::history]))
