@@ -24,7 +24,7 @@
   (let [description (if (zero? index)
                       "Go to game start"
                      (str "Go to move #" index))]
-    [:button {:on-click #(re-frame/dispatch [:on-jump-to-button-click index])}
+    [:button {:on-click #(re-frame/dispatch [::models/on-move-history-select index])}
       description]))
 
 (defn game-info [& {:keys [history, status]}]
