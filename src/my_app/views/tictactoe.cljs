@@ -46,5 +46,4 @@
 (defn tictactoe []
   (let [model (re-frame/subscribe [::models/tictactoe])]
     (fn []
-      (println @model)
       [tictactoe-component @model])))
